@@ -37,10 +37,16 @@ int main(int argc, char **argv) {
   global_init(NULL, args, CEPH_ENTITY_TYPE_CLIENT, CODE_ENVIRONMENT_UTILITY, 0);
   common_init_finish(g_ceph_context);
 
-  system("mkdir -p .libs/compressor");
-  system("cp .libs/libceph_zlib.so* .libs/compressor/");
+  const char* env = getenv("CEPH_LIB");
+  string directory(env ? env : "lib");
+  string mkdir_compressor = "mkdir -p " + directory + "/compressor";
+  system(mkdir_compressor.c_str());
 
-  g_conf->set_val("plugin_dir", ".libs", false, false);
+  string cp_libceph_zlib = "cp " + directory + "/libceph_zlib.so* " + directory + "/compressor/";
+  system(cp_libceph_zlib.c_str());
+
+  g_conf->set_val("plugin_dir", directory, false, false);
+
 
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
